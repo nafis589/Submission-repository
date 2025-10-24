@@ -1,47 +1,78 @@
-import {useState} from 'react'
+import { useState } from 'react'
 
-const App = () => {
-  const anecdotes = [
-    'If it hurts, do it more often.',
-    'Adding manpower to a late software project makes it later!',
-    'The first 90 percent of the code accounts for the first 10 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-    'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-    'Premature optimization is the root of all evil.',
-    'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
-    'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.'
-  ];
-  const [selected, setSelected] = useState(0);
-  const [votes, setVotes] = useState(new Array(anecdotes.length).fill(0));
-  const [mostVotes, setMostVotes] = useState(0);
-
-  const handleClick = () =>{
-    const randomIndex = Math.floor(Math.random()*anecdotes.length);
-    setSelected(randomIndex);
-  }
-  const handleSave = () =>{
-    const copy = [...votes];
-    copy[selected] += 1;
-    setVotes(copy);
-
-    const max = copy.indexOf(Math.max(...copy));
-    setMostVotes(max);
-    console.log(mostVotes)
-  }
-  
-  
-   
+const Filter = (props) => {
   return (
     <div>
-      <h1>Anecdote of the day</h1>
-      <p>{anecdotes[selected]}</p>
-      <p>has {votes[selected]} votes</p>
-      <button onClick={handleSave}>vote</button>
-      <button onClick={handleClick}>next anecdotes</button>
-      <h1>Anecdotes with most votes</h1>
-      <p>{anecdotes[mostVotes]}</p>
-      <p>has {votes[mostVotes]} votes</p>
+      filter shown with <input onChange={props.onChange} value={props.value}/>
     </div>
+  )
+}
+
+const PersonForm = (props) => {
+  return (
+    <form onSubmit={props.onSubmit}>
+        <div>
+          name: <input onChange={props.onChange1} value={props.value1}/>
+        </div>
+        <div>
+          number: <input onChange={props.onChange2} value={props.value2}/>
+        </div>
+        <div>
+          <button type="submit">add</button>
+        </div>
+    </form>
+  )
+}
+
+const Persons = (props) => {
+  return (
+    <ul>
+      {props.filter ?props.result.map(re => <li key={props.result.length+1}>{re.name} {re.number}</li>):props.persons.map(person => <li key={person.name}>{person.name} {person.number}</li>)}
+    </ul>
+  )
+}
+const App = () => {
+  const [persons, setPersons] = useState([
+    { name: 'Arto Hellas', number: '040-1234567', id: 1 }
+  ]) 
+  const [newName, setNewName] = useState('');
+  const [newNumber, setnewNumber] = useState('');
+  const [filter, setFilter] = useState ('');
+
+  const handleNameSave = (e) => {
+    e.preventDefault();
+    const nameExists = persons.some(person => person.name === newName);
+    if (nameExists) {
+      alert (`${newName} is already added to phonebook`);
+    } else {
+      setPersons(persons.concat({name: newName, number: newNumber}))
+    }
+    setNewName('');
+    setnewNumber('');
+  }
+
+  const handleNameChange = (e) => {
+    setNewName(e.target.value);
+  }
+
+  const handleNumberChange = (e) => {
+    setnewNumber(e.target.value);
+  }
+
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
     
+  }
+  const result = persons.filter(person => person.name.toLowerCase().startsWith(filter.toLowerCase()));
+  return (
+    <div>
+      <h2>Phonebook</h2>
+      <Filter onChange = {handleFilterChange} value = {filter}/>
+      <h2>add a new</h2>
+      <PersonForm onSubmit={handleNameSave} onChange1 = {handleNameChange} onChange2 = {handleNumberChange} value1 = {newName} value2 = {newNumber}/>
+      <h2>Numbers</h2>
+      <Persons result ={result} persons = {persons} filter = {filter} />
+    </div>
   )
 }
 
